@@ -77,11 +77,6 @@ int main(void)
                 yvel_ball = BALL_YVEL_INITIAL;
             }
         }
-        ball.x += xvel_ball;
-        ball.y += yvel_ball;
-
-        xvel_ball *= BALL_ACCEL_FACTOR;
-        yvel_ball *= BALL_ACCEL_FACTOR;
         
         // Move the platform whilst ensuring it doesn't leave the screen's borders
         if (IsKeyDown(KEY_LEFT)  && platform.x > PLAT_LEFT_BOUND)  platform.x -= speed_platform;
@@ -101,18 +96,20 @@ int main(void)
                 score = 0;
         }
 
-        // Check for collisions with the top wall
-        if (ball.y <= 0) yvel_ball *= -1;
-        // Check for collisions with the right and left walls
-        if (ball.x <= 0 || ball.x >= SCREEN_WIDTH) xvel_ball *= -1;
-
-        // Check for collisions between the ball and the platform        
-        // Note: checking the ball's y velocity is positive - e.g that is it is moving downwards -
-        // prevents a bug where the ball collides with the platform during multiple successive frames.
-        if (CheckCollisionCircleRec(ball, BALL_RADIUS, platform) && yvel_ball > 0) {
+        // Check for vertical collisions: between the ball and either the top wall or the platform 
+        if (ball.y <= 0 || CheckCollisionCircleRec(ball, BALL_RADIUS, platform))
             yvel_ball *= -1;
-            score++;
-        }
+
+        // Check for horizontal collisions: between the left and right edges of the screen.
+        if (ball.x <= 0 || ball.x >= SCREEN_WIDTH)
+            xvel_ball *= -1;
+
+        // Translate the ball in space.
+        ball.x += xvel_ball;
+        ball.y += yvel_ball;
+
+        xvel_ball *= BALL_ACCEL_FACTOR;
+        yvel_ball *= BALL_ACCEL_FACTOR;
         //----------------------------------------------------------------------------------
 
         // Draw
